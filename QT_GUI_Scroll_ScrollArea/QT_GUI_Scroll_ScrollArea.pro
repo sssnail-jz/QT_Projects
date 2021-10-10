@@ -1,6 +1,6 @@
 #--------------------------------------------------
 #
-# Project created by LarkStudio 2021-10-09T14:51:06
+# Project created by LarkStudio 2021-10-10T22:35:55
 #
 #--------------------------------------------------
 
@@ -8,7 +8,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = QT_GUI_3EventFilter
+TARGET = QT_GUI_Scroll_ScrollArea
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use

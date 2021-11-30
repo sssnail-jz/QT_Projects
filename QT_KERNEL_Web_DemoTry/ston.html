@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="text/javascript" src="D:/QT_Project_Git/QT_KERNEL_Web_DemoTry/qwebchannel.js"></script>
+    <title>Document</title>
+    <style>
+        /* 容器 */
+        
+        #container {
+            border: 3px solid orange;
+            width: 600px;
+            height: 600px;
+            margin: 0px 0px;
+            padding: 0px 0px;
+            position: relative;
+        }
+        /* 砖块 */
+        
+        ul {
+            list-style: none;
+        }
+        
+        li {
+            display: inline-block;
+            position: absolute;
+            width: 100px;
+            height: 20px;
+        }
+        /* 小球 */
+        
+        #bubble {
+            position: absolute;
+            bottom: 30px;
+            left: 230px;
+            width: 50px;
+            height: 50px;
+            background-color: red;
+            border-radius: 50%;
+        }
+        /* 挡板 */
+        
+        #board {
+            position: absolute;
+            bottom: 0px;
+            left: 160px;
+            width: 200px;
+            height: 30px;
+            color: white;
+            text-align: center;
+            font-weight: bold;
+            background-color: blue;
+        }
+        
+        #start {
+            float: left;
+            width: 100px;
+            left: 200px;
+            text-align: center;
+            border: 2px solid red;
+            border-radius: 20%;
+            cursor: pointer;
+        }
+		
+		#spliter{
+			height: 60px;
+		}
+		#input{
+			display: block;
+		}
+		#submit{
+			display: block;
+		}
+		#show{
+			display: block;
+			height: 100px;
+		}
+    </style>
+</head>
+
+<body>
+    <div id="container">
+        <ul>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+        </ul>
+        <div id="bubble"></div>
+        <div id="board"></div>
+		<!-- QT和JS的通信 -->
+    </div>
+    <div id="start">开始</div>
+	<p id = "spliter"></p>
+
+	<input id = "show" placeholder="接收 QT 发送过来的文本"></div>
+	<input id = "input" placeholder="内容将被发送到QT"></div>
+	<input type="submit" id="send" value="发送数据到QT"/>
+</body>
+
+</html>
+<script>
+    function $(id) {
+        return document.getElementById(id);
+    }
+
+    function rand(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    //Web initial loading
+    window.onload = function() {
+		new QWebChannel(qt.webChannelTransport, function(channel) {
+
+			//获取Qt发的数据
+			var interactObj = channel.objects.interactObj;
+			//Web send message to Qt
+			document.getElementById("send").onclick = function() {
+				var input = document.getElementById("input");
+				if (!input.value) {
+					return;
+				}
+
+				//Web向Qt发送数据
+				interactObj.JSSendMessage(input.value);
+				input.value = "";
+			}
+			// Web接收到来着Qt的数据传输信号的槽
+			interactObj.SigSendMessageToJS.connect(function(str) {
+				document.getElementById("show").innerHTML = "Received string from Qt: " + str;
+			});
+		});
+	}
+
+    // 打砖块构造函数
+    function BlockBreak() {
+        this.box = $("container"); // 容器
+        this.list = document.getElementsByTagName("li"); // 砖块
+        this.board = $("board"); // 挡板
+        this.ball = $("bubble"); // 小球
+        this.fx = 1; // 横向
+        this.fy = -1; // 纵向
+        this.leftInit = 0; // 砖块 left 初始值
+        this.topInit = 0; // 砖块 top 初始值
+    }
+
+    BlockBreak.prototype.init = function() {
+        for (var i = 0; i < this.list.length; i++) {
+            this.list[i].style.backgroundColor =
+                "rgb(" + rand(0, 255) + "," +
+                rand(0, 255) + ", " + rand(0, 255) + ")";
+            var x = this.leftInit * this.list[0].offsetWidth;
+            var y = this.topInit;
+            this.list[i].style.left = x + "px";
+            this.list[i].style.top = y + "px";
+            this.leftInit++;
+
+            if ((i + 1) % 6 == 0) {
+                this.leftInit = 0;
+                this.topInit += this.list[0].offsetHeight;
+            }
+
+        }
+    }
+
+    BlockBreak.prototype.keydown = function() {
+        var that = this;
+        document.onkeydown = function(e) {
+            var e = e || event;
+            // 左键按下
+            if (e.keyCode == 37) {
+                that.board.style.left = that.board.offsetLeft - 20 + "px";
+                if (that.board.offsetLeft <= 0) {
+                    that.board.style.left = 0 + "px";
+                }
+            }
+            // 右键按下
+            if (e.keyCode == 39) {
+                that.board.style.left = that.board.offsetLeft + 20 + "px";
+                if (that.board.offsetLeft >= (that.box.offsetWidth - that.board.offsetWidth)) {
+                    that.board.style.left = that.box.offsetWidth - that.board.offsetWidth - 5 + "px";
+                }
+            }
+        }
+    }
+
+    BlockBreak.prototype.move = function() {
+        var timer = null;
+        var that = this;
+        timer = setInterval(function() {
+            that.ball.style.left =
+                that.ball.offsetLeft + that.fx + "px";
+            that.ball.style.top =
+                that.ball.offsetTop + that.fy + "px";
+
+            // 左
+            if (that.ball.offsetLeft <= 0) {
+                that.fx *= -1;
+            }
+
+            // 上
+            if (that.ball.offsetTop <= 0) {
+                that.fy *= -1;
+            }
+
+            // 右
+            if (that.ball.offsetLeft >= (that.box.offsetWidth - that.ball.offsetWidth)) {
+                that.fx *= -1;
+            }
+
+            // 下
+            if (that.ball.offsetTop >= (that.box.offsetHeight - that.ball.offsetHeight) - 5) {
+                clearInterval(timer);
+                that.board.innerHTML = "游戏结束！";
+            }
+
+            // 小球与挡板的碰撞
+            if (that.ball.offsetTop + that.ball.offsetHeight >= that.board.offsetTop) {
+                if (that.ball.offsetLeft + that.ball.offsetWidth >= that.board.offsetLeft) {
+                    if (that.ball.offsetLeft <= that.board.offsetLeft + that.board.offsetWidth) {
+                        that.fy *= -1;
+                    }
+                }
+            }
+
+            // 小球和砖块的碰撞检测
+            for (var i = 0; i < that.list.length; i++) {
+                if (that.ball.offsetTop <= that.list[i].offsetTop + that.list[i].offsetHeight) {
+                    if (that.ball.offsetLeft >= that.list[i].offsetLeft) {
+                        if (that.ball.offsetLeft <= that.list[i].offsetLeft + that.list[i].offsetWidth) {
+                            that.fy *= -1;
+                            that.list[i].style.display = "none";
+                        }
+                    }
+                }
+            }
+        }, 5);
+
+    }
+
+    var bb = new BlockBreak();
+    bb.init();
+    $("start").onclick = function() {
+        bb.keydown();
+        bb.move();
+    }
+</script>
